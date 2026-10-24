@@ -1,13 +1,11 @@
 import {test } from "../fixtures/employee.ts";
 import { expect } from "@playwright/test";
-import userCredentials from "../../../testData/ui/userCredentials.ts";
 import validEmployeeData from "../../../testData/ui/validEmployeeData.ts";
 import inValidEmployeeData from "../../../testData/ui/inValidEmployeeData.ts";
 
 test ("Valid add employee", async  ({pomManager ,employeePage}) => {
 
-// 1- valid login
-await pomManager.getLoginPage().login(userCredentials.username_input,userCredentials.password_input);
+// 1- already logged in through the API (pomManager fixture)
 await expect (pomManager.getHomePage().user_img).toBeVisible ();
 
 // 2- click pim from side bar in home page
@@ -38,8 +36,7 @@ inValidEmployeeData.forEach((data) => {
 
 test (`Invalid add employee ${data.testType}` , async  ({pomManager ,employeePage}) => {
 
-// 1- valid login
-await pomManager.getLoginPage().login(userCredentials.username_input,userCredentials.password_input);
+// 1- already logged in through the API (pomManager fixture)
 await expect (pomManager.getHomePage().user_img).toBeVisible ();
 
 // 2- click pim from side bar in home page

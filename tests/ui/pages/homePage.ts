@@ -20,6 +20,11 @@ this.pim_btn = page.locator (".oxd-main-menu-item", { hasText: "PIM" });
 //=========================Methods=========================
 
 //=========================Actions=========================
+async navigate_to(){
+
+    await this.page.goto('/web/index.php/dashboard/index');
+}
+
 async clicking(element : Locator) {
 
     await element.click();

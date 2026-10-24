@@ -11,6 +11,7 @@ End-to-end UI and API test automation with [Playwright](https://playwright.dev) 
 
 - Playwright Test (`@playwright/test`) with TypeScript
 - Page Object Model, with a `PomManager` and custom fixtures
+- API login: the UI tests sign in through the backend and inject the session cookie into the browser, so they skip the login form
 - Data-driven tests with typed test data
 - GitHub Actions for CI
 
@@ -30,7 +31,9 @@ End-to-end UI and API test automation with [Playwright](https://playwright.dev) 
     │   ├── fixtures/employee.ts        # pomManager and employeePage fixtures
     │   └── specs/addEmployee.spec.ts
     └── apis/
-        ├── endpoints/usersEndPoints.ts # reqres.in request helpers
+        ├── endpoints/
+        │   ├── authEndPoints.ts        # OrangeHRM API login (CSRF token + session cookie)
+        │   └── usersEndPoints.ts       # reqres.in request helpers
         └── specs/usersApi.spec.ts
 ```
 
@@ -38,7 +41,7 @@ End-to-end UI and API test automation with [Playwright](https://playwright.dev) 
 
 ### UI: Add Employee (OrangeHRM)
 
-Each test opens the login page, signs in as Admin, and goes to **PIM → Add Employee**.
+Each test signs in as Admin through the API (see [API login](#api-login)), opens the dashboard already logged in, and goes to **PIM → Add Employee**.
 
 | Test | What it checks |
 |---|---|
@@ -73,6 +76,16 @@ npx playwright test tests/apis    # API tests only
 npx playwright test --headed      # watch the browser
 npx playwright show-report        # open the last HTML report
 ```
+
+## API login
+
+The `pomManager` fixture logs in before each UI test without touching the login form:
+
+1. `GET /web/index.php/auth/login` and read the CSRF token from the page.
+2. `POST /web/index.php/auth/validate` with the token and the credentials from `testData/ui/userCredentials.ts`. On success OrangeHRM redirects to the dashboard and sets a new `orangehrm` session cookie. On failure it redirects back to the login page and the fixture throws `API login failed`.
+3. Read the session ID from the `Set-Cookie` header and add it to the browser context with `addCookies`.
+
+The test then opens `/web/index.php/dashboard/index` already logged in. The request helper is in `tests/apis/endpoints/authEndPoints.ts`.
 
 ## Adding a negative case
 
